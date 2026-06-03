@@ -1,0 +1,41 @@
+from bisect import bisect_right
+
+class Solution:
+    def earliestFinishTime(self, landStartTime: list[int], landDuration: list[int], waterStartTime: list[int], waterDuration: list[int]) -> int:
+        
+        def optimize_order(start_first, duration_first, start_second, duration_second):
+            min_first_end = min(s + d for s, d in zip(start_first, duration_first))
+            
+            rides_second = sorted(zip(start_second, duration_second))
+            num_second = len(rides_second)
+            
+            sorted_starts = [r[0] for r in rides_second]
+            
+            prefix_min_dur = [0] * num_second
+            current_min_dur = float('inf')
+            for i in range(num_second):
+                current_min_dur = min(current_min_dur, rides_second[i][1])
+                prefix_min_dur[i] = current_min_dur
+                
+            suffix_min_total = [0] * num_second
+            current_min_total = float('inf')
+            for i in range(num_second - 1, -1, -1):
+                current_min_total = min(current_min_total, rides_second[i][0] + rides_second[i][1])
+                suffix_min_total[i] = current_min_total
+            
+            idx = bisect_right(sorted_starts, min_first_end)
+            
+            best_finish = float('inf')
+            
+            if idx > 0:
+                best_finish = min(best_finish, min_first_end + prefix_min_dur[idx - 1])
+                
+            if idx < num_second:
+                best_finish = min(best_finish, suffix_min_total[idx])
+                
+            return best_finish
+
+        path_1 = optimize_order(landStartTime, landDuration, waterStartTime, waterDuration)
+        path_2 = optimize_order(waterStartTime, waterDuration, landStartTime, landDuration)
+        
+        return min(path_1, path_2)
