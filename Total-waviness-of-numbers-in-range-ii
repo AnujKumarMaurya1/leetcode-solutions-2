@@ -1,0 +1,53 @@
+class Solution:
+    def totalWaviness(self, num1: int, num2: int) -> int:
+        
+        def solve(X: int) -> int:
+            if X < 100:
+                return 0
+                
+            s = str(X)
+            length = len(s)
+            memo = {}
+            
+            def dfs(idx, prev, prev2, is_less, is_started):
+                key = (idx, prev, prev2, is_less, is_started)
+                if key in memo:
+                    return memo[key]
+                
+                if idx == length:
+                    return 0, 1
+                    
+                limit = 9 if is_less else int(s[idx])
+                res_waviness = 0
+                res_count = 0
+                
+                for d in range(limit + 1):
+                    next_less = is_less or (d < limit)
+                    
+                    if not is_started:
+                        if d == 0:
+                            wav, cnt = dfs(idx + 1, 10, 10, next_less, False)
+                            res_waviness += wav
+                            res_count += cnt
+                        else:
+                            wav, cnt = dfs(idx + 1, d, 10, next_less, True)
+                            res_waviness += wav
+                            res_count += cnt
+                    else:
+                        delta = 0
+                        if prev2 != 10:
+                            if prev2 < prev > d:
+                                delta = 1
+                            elif prev2 > prev < d:
+                                delta = 1
+                                
+                        wav, cnt = dfs(idx + 1, d, prev, next_less, True)
+                        res_waviness += wav + delta * cnt
+                        res_count += cnt
+                        
+                memo[key] = (res_waviness, res_count)
+                return memo[key]
+                
+            return dfs(0, 10, 10, False, False)[0]
+
+        return solve(num2) - solve(num1 - 1)
