@@ -1,0 +1,74 @@
+class Node:
+    def _init_(self, count=0):
+        self.count = count
+        self.keys = set()
+        self.prev = None
+        self.next = None
+
+class AllOne:
+    def _init_(self):
+        self.head = Node()
+        self.tail = Node()
+        self.head.next = self.tail
+        self.tail.prev = self.head
+        self.mapping = {}
+
+    def _insert_after(self, old_node, new_node):
+        new_node.prev = old_node
+        new_node.next = old_node.next
+        old_node.next.prev = new_node
+        old_node.next = new_node
+
+    def _remove_node(self, node):
+        node.prev.next = node.next
+        node.next.prev = node.prev
+
+    def inc(self, key: str) -> None:
+        if key not in self.mapping:
+            first_node = self.head.next
+            if first_node == self.tail or first_node.count > 1:
+                new_node = Node(1)
+                self._insert_after(self.head, new_node)
+                first_node = new_node
+            first_node.keys.add(key)
+            self.mapping[key] = first_node
+        else:
+            curr_node = self.mapping[key]
+            next_node = curr_node.next
+            if next_node == self.tail or next_node.count > curr_node.count + 1:
+                new_node = Node(curr_node.count + 1)
+                self._insert_after(curr_node, new_node)
+                next_node = new_node
+            next_node.keys.add(key)
+            self.mapping[key] = next_node
+            curr_node.keys.remove(key)
+            if not curr_node.keys:
+                self._remove_node(curr_node)
+
+    def dec(self, key: str) -> None:
+        curr_node = self.mapping[key]
+        curr_node.keys.remove(key)
+        
+        if curr_node.count == 1:
+            del self.mapping[key]
+        else:
+            prev_node = curr_node.prev
+            if prev_node == self.head or prev_node.count < curr_node.count - 1:
+                new_node = Node(curr_node.count - 1)
+                self._insert_after(prev_node, new_node)
+                prev_node = new_node
+            prev_node.keys.add(key)
+            self.mapping[key] = prev_node
+            
+        if not curr_node.keys:
+            self._remove_node(curr_node)
+
+    def getMaxKey(self) -> str:
+        if self.tail.prev == self.head:
+            return ""
+        return next(iter(self.tail.prev.keys))
+
+    def getMinKey(self) -> str:
+        if self.head.next == self.tail:
+            return ""
+        return next(iter(self.head.next.keys))                        
