@@ -1,0 +1,36 @@
+class Codec:
+    def serialize(self, root: Optional[TreeNode]) -> str:
+        vals = []
+        
+        def preorder(node):
+            if node:
+                vals.append(str(node.val))
+                preorder(node.left)
+                preorder(node.right)
+                
+        preorder(root)
+        return " ".join(vals)
+
+    def deserialize(self, data: str) -> Optional[TreeNode]:
+        if not data:
+            return None
+            
+        vals = [int(x) for x in data.split()]
+        idx = 0
+        
+        def build(lower, upper):
+            nonlocal idx
+            if idx >= len(vals):
+                return None
+                
+            val = vals[idx]
+            if val < lower or val > upper:
+                return None
+                
+            idx += 1
+            root = TreeNode(val)
+            root.left = build(lower, val)
+            root.right = build(val, upper)
+            return root
+            
+        return build(float('-inf'), float('inf'))
