@@ -1,0 +1,38 @@
+class Solution:
+    def processStr(self, s: str, k: int) -> str:
+        n = len(s)
+        lengths = [0] * n
+        curr_len = 0
+        
+        for i in range(n):
+            char = s[i]
+            if char.islower():
+                curr_len += 1
+            elif char == '*':
+                if curr_len > 0:
+                    curr_len -= 1
+            elif char == '#':
+                curr_len *= 2
+            elif char == '%':
+                pass
+            lengths[i] = curr_len
+            
+        if k >= curr_len or curr_len == 0:
+            return '.'
+            
+        for i in range(n - 1, -1, -1):
+            char = s[i]
+            
+            if char == '#':
+                prev_len = lengths[i] // 2
+                if prev_len > 0:
+                    k %= prev_len
+            elif char == '%':
+                k = lengths[i] - 1 - k
+            elif char == '*':
+                pass
+            else:
+                if k == lengths[i] - 1:
+                    return char
+                    
+        return '.'
