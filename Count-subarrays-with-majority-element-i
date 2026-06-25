@@ -1,0 +1,21 @@
+class Solution:
+    def countMajoritySubarrays(self, nums: list[int], target: int) -> int:
+        n = len(nums)
+        ans = 0
+        
+        freq = {0: 1}
+        curr_sum = 0
+        
+        for num in nums:
+            if num == target:
+                curr_sum += 1
+            else:
+                curr_sum -= 1
+                
+            for prev_sum in freq:
+                if prev_sum < curr_sum:
+                    ans += freq[prev_sum]
+                    
+            freq[curr_sum] = freq.get(curr_sum, 0) + 1
+            
+        return ans
