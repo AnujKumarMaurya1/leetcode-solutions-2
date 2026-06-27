@@ -1,0 +1,33 @@
+from collections import Counter
+
+class Solution:
+    def maximumLength(self, nums: list[int]) -> int:
+        count = Counter(nums)
+        ans = 1
+        
+        if 1 in count:
+            ones = count[1]
+            if ones % 2 == 0:
+                ans = max(ans, ones - 1)
+            else:
+                ans = max(ans, ones)
+                
+        for x in count:
+            if x == 1:
+                continue
+                
+            curr_len = 0
+            curr = x
+            
+            while count[curr] >= 2:
+                curr_len += 2
+                curr = curr * curr
+                
+            if count[curr] >= 1:
+                curr_len += 1
+            else:
+                curr_len -= 1
+                
+            ans = max(ans, curr_len)
+            
+        return ans
