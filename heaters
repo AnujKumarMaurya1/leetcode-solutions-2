@@ -1,0 +1,17 @@
+import bisect
+
+class Solution:
+    def findRadius(self, houses: list[int], heaters: list[int]) -> int:
+        heaters.sort()
+        min_radius = 0
+        
+        for house in houses:
+            idx = bisect.bisect_left(heaters, house)
+            
+            dist_right = heaters[idx] - house if idx < len(heaters) else float('inf')
+            dist_left = house - heaters[idx - 1] if idx > 0 else float('inf')
+            
+            closest_heater_dist = min(dist_left, dist_right)
+            min_radius = max(min_radius, closest_heater_dist)
+            
+        return min_radius
