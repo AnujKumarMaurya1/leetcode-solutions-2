@@ -1,0 +1,39 @@
+class Solution:
+    def pathsWithMaxScore(self, board: list[str]) -> list[int]:
+        n = len(board)
+        MOD = 10**9 + 7
+        
+        dp_sum = [[-1] * n for _ in range(n)]
+        dp_cnt = [[0] * n for _ in range(n)]
+        
+        dp_sum[n - 1][n - 1] = 0
+        dp_cnt[n - 1][n - 1] = 1
+        
+        for i in range(n - 1, -1, -1):
+            for j in range(n - 1, -1, -1):
+                if board[i][j] == 'X' or dp_sum[i][j] == -1:
+                    continue
+                    
+                current_sum = dp_sum[i][j]
+                current_cnt = dp_cnt[i][j]
+                
+                for di, dj in [(-1, 0), (0, -1), (-1, -1)]:
+                    ni, nj = i + di, j + dj
+                    
+                    if 0 <= ni < n and 0 <= nj < n and board[ni][nj] != 'X':
+                        cell_val = 0
+                        if board[ni][nj].isdigit():
+                            cell_val = int(board[ni][nj])
+                            
+                        next_sum = current_sum + cell_val
+                        
+                        if next_sum > dp_sum[ni][nj]:
+                            dp_sum[ni][nj] = next_sum
+                            dp_cnt[ni][nj] = current_cnt
+                        elif next_sum == dp_sum[ni][nj]:
+                            dp_cnt[ni][nj] = (dp_cnt[ni][nj] + current_cnt) % MOD
+                            
+        if dp_sum[0][0] == -1:
+            return [0, 0]
+            
+        return [dp_sum[0][0], dp_cnt[0][0]]
