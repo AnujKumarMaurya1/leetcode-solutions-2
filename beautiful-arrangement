@@ -1,0 +1,13 @@
+class Solution:
+    def countArrangement(self, n: int) -> int:
+        def dp(i, used, memo: dict):
+            if i > n:
+                return 1
+            if (i, used) not in memo:
+                memo[(i, used)] = 0
+                for j in range(1, n+1):
+                    if not used & (1 << (j - 1)):
+                        if j % i == 0 or i % j == 0:
+                            memo[(i, used)] += dp(i+1, used | (1 << (j-1)), memo)
+            return memo[(i, used)]
+        return dp(1, 0, {})
