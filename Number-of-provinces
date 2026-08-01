@@ -1,0 +1,33 @@
+from collections import defaultdict
+
+class Solution:
+    def findCircleNum(self, isConnected: List[List[int]]) -> int:
+
+        def buildGraph(edges):
+            graph = defaultdict(list)
+
+            for i in range(len(edges)):
+                for j in range(len(edges)):
+                    if edges[i][j] == 1:
+                        graph[i].append(j)
+
+            return graph
+
+        graph = buildGraph(isConnected)
+
+        visited = set()
+        ans = 0
+
+        def dfs(node):
+            visited.add(node)
+
+            for neighbor in graph[node]:
+                if neighbor not in visited:
+                    dfs(neighbor)
+
+        for i in range(len(isConnected)):
+            if i not in visited:
+                ans += 1
+                dfs(i)
+
+        return ans
