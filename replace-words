@@ -1,0 +1,51 @@
+class TrieNode:
+    def __init__(self):
+        self.children = {}
+        self.isEnd = False
+
+
+class Trie:
+    def __init__(self):
+        self.root = TrieNode()
+
+    def insert(self, word):
+        node = self.root
+
+        for i in word:
+            if i not in node.children:
+                node.children[i] = TrieNode()
+
+            node = node.children[i]
+
+        node.isEnd = True
+
+    def rt(self, word):
+        node = self.root
+
+        for i in range(len(word)):
+            c = word[i]
+
+            if c not in node.children:
+                return word
+
+            node = node.children[c]
+
+            if node.isEnd:
+                return word[:i + 1]
+
+        return word
+
+
+class Solution:
+    def replaceWords(self, dictionary: List[str], sentence: str) -> str:
+        arr = sentence.split()
+
+        t = Trie()
+
+        for word in dictionary:
+            t.insert(word)
+
+        for word in range(len(arr)):
+            arr[word] = t.rt(arr[word])
+
+        return ' '.join(arr)
