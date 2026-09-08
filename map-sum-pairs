@@ -1,0 +1,45 @@
+class MapSum:
+    def __init__(self):
+        self.map = {}
+
+    
+    def insert(self, key: str, val: int) -> None:
+        n = self.map
+        
+        
+        for letter in key:
+            if letter not in n:
+                n[letter] = {'*' : 0}
+            
+            
+            n = n[letter]
+        
+        
+        n['*'] = val
+
+    
+    def get_subtree_sum(self, n):
+        summ = n['*']
+        
+        
+        for letter in n:
+            if letter != '*':
+                summ += self.get_subtree_sum(n[letter])
+        
+        
+        return summ
+    
+    
+    def sum(self, prefix: str) -> int:
+        n = self.map
+        
+        
+        for letter in prefix:
+            if letter not in n:
+                return 0
+            
+            
+            n = n[letter]
+        
+        
+        return self.get_subtree_sum(n)
