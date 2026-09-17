@@ -1,0 +1,26 @@
+class Solution(object):
+    def minSumOfLengths(self, arr, target):
+        n = len(arr)
+        INF = float('inf')
+        min_len = [INF] * n
+        ans = INF
+        left = 0
+        current_sum = 0
+
+        for right in range(n):
+            current_sum += arr[right]
+
+            while current_sum > target:
+                current_sum -= arr[left]
+                left += 1
+
+            if right > 0:
+                min_len[right] = min_len[right - 1]
+
+            if current_sum == target:
+                curr_len = right - left + 1
+                if left > 0 and min_len[left - 1] != INF:
+                    ans = min(ans, min_len[left - 1] + curr_len)
+                min_len[right] = min(min_len[right], curr_len)
+
+        return ans if ans != INF else -1
