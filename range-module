@@ -1,0 +1,141 @@
+class WaveletNode:
+    __slots__ = ['covered', 'lazy', 'left', 'right']
+    def __init__(self):
+        # Trinary saturation state: 0 = completely empty, 1 = completely full, -1 = mixed
+        self.covered = 0
+        # Lazy macro-override approximation value: None, 0, or 1
+        self.lazy = None
+        self.left = None
+        self.right = None
+
+class DynamicWaveletRangeEngine:
+    def __init__(self):
+        self.root = WaveletNode()
+        self.DOMAIN_MIN = 1
+        self.DOMAIN_MAX = 10**9
+
+    def _push_down(self, node: WaveletNode):
+        """
+        Deterministically pushes the low-frequency macro-approximation downward 
+        to child channels before executing localized detail transformations.
+        """
+        if node.lazy is None:
+            return
+            
+        val = node.lazy
+        if node.left is None:
+            node.left = WaveletNode()
+        if node.right is None:
+            node.right = WaveletNode()
+            
+        # Distribute the macro state to child nodes
+        node.left.covered = val
+        node.left.lazy = val
+        node.right.covered = val
+        node.right.lazy = val
+        
+        # Clear the parent lazy parameter as it is now localized and consumed
+        node.lazy = None
+
+    def update_range(self, node: WaveletNode, start: int, end: int, l: int, r: int, val: int):
+        """
+        Injects or cancels a localized rectangular step pulse within the wavelet tree.
+        """
+        # Case 1: The target interval completely swallows this node's timeline footprint
+        if l <= start and end <= r:
+            node.covered = val
+            node.lazy = val
+            return
+
+        self._push_down(node)
+        mid = (start + end) // 2
+
+        # Route the signal boundaries down the multi-resolution paths
+        if l < mid:
+            if node.left is None:
+                node.left = WaveletNode()
+            self.update_range(node.left, start, mid, l, min(mid, r), val)
+        if r > mid:
+            if node.right is None:
+                node.right = WaveletNode()
+            self.update_range(node.right, mid, end, max(mid, l), r, val)
+
+        # Bottom-up synthesis: Reconstruct the parent state from sub-resolution details
+        left_state = node.left.covered if node.left else 0
+        right_state = node.right.covered if node.right else 0
+
+        if left_state == 1 and right_state == 1:
+            node.covered = 1
+        elif left_state == 0 and right_state == 0:
+            node.covered = 0
+        else:
+            node.covered = -1
+
+    def query_range(self, node: WaveletNode, start: int, end: int, l: int, r: int) -> bool:
+        """
+        Verifies if a target interval contains 100% continuous signal density.
+        """
+        if node is None:
+            return False
+
+        # If a macro-approximation block is hit, return its status directly
+        if node.covered == 1:
+            return True
+        if node.covered == 0:
+            return False
+
+        # If the query interval maps inside a mixed node, evaluate its sub-bands
+        mid = (start + end) // 2
+        
+        if r <= mid:
+            return self.query_range(node.left, start, mid, l, r)
+        if l >= mid:
+            return self.query_range(node.right, mid, end, l, r)
+            
+        # Cross-boundary query: Both child bands must prove absolute continuity
+        return self.query_range(node.left, start, mid, l, mid) and \
+               self.query_range(node.right, mid, end, mid, r)
+
+class RangeModule:
+
+    def __init__(self):
+        self.wavelet_engine = DynamicWaveletRangeEngine()        
+
+    def addRange(self, left: int, right: int) -> None:
+        # Inject a saturated signal (+1) across the half-open range [left, right)
+        self.wavelet_engine.update_range(
+            self.wavelet_engine.root,
+            self.wavelet_engine.DOMAIN_MIN,
+            self.wavelet_engine.DOMAIN_MAX,
+            left,
+            right,
+            1
+        )        
+
+    def queryRange(self, left: int, right: int) -> bool:
+        # Verify 100% density across the half-open range [left, right)
+        return self.wavelet_engine.query_range(
+            self.wavelet_engine.root,
+            self.wavelet_engine.DOMAIN_MIN,
+            self.wavelet_engine.DOMAIN_MAX,
+            left,
+            right
+        )        
+
+    def removeRange(self, left: int, right: int) -> None:
+        # Cancel the signal wavefront (0) across the half-open range [left, right)
+        self.wavelet_engine.update_range(
+            self.wavelet_engine.root,
+            self.wavelet_engine.DOMAIN_MIN,
+            self.wavelet_engine.DOMAIN_MAX,
+            left,
+            right,
+            0
+        )        
+
+
+# Your RangeModule object will be instantiated and called as such:
+# obj = RangeModule()
+# obj.addRange(left,right)
+# param_2 = obj.queryRange(left,right)
+# obj.removeRange(left,right)
