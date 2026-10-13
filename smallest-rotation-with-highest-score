@@ -1,0 +1,25 @@
+class Solution:
+    def bestRotation(self, nums: list[int]) -> int:
+        n = len(nums)
+        diff = [0]*(n+1)
+        for i, v in enumerate(nums):
+            if v == 0:
+                continue
+            start, end = (i - v + 1) % n, (i + 1) % n
+            if start < end:
+                diff[start] += 1
+                diff[end] -= 1
+            else:
+                diff[0] += 1
+                diff[end] -= 1
+                diff[start] += 1
+                diff[n] -= 1
+        curr = 0
+        best = float('inf')
+        idx = 0
+        for k in range(n):
+            curr += diff[k]
+            if curr < best:
+                best = curr
+                idx = k
+        return idx
