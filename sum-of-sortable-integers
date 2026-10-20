@@ -1,0 +1,48 @@
+class Solution:
+    def sortableIntegers(self, nums: list[int]) -> int:
+        n = len(nums)
+        target = sorted(nums)
+
+        def get_div(n):
+            div = []
+            for i in range(1, int(n**0.5) + 1):
+                if n % i == 0:
+                    div.append(i)
+                    if i * i != n:
+                        div.append(n // i)
+            return div
+
+        def solve(arr, goal):
+            # 1. Check if the block contains the correct elements
+            if sorted(arr) != goal:
+                return False
+            
+            k = len(arr)
+            if k <= 2:
+                return True
+            
+            # 2. Count the "dips" (descending adjacent pairs)
+            b = 0
+            for i in range(k - 1):
+                if arr[i] > arr[i + 1]:
+                    b += 1
+            
+            # Case 1: Already sorted
+            if b == 0:
+                return True
+            # Case 2: One dip (check if wrap-around is valid)
+            if b == 1:
+                return arr[-1] <= arr[0]
+            # Case 3: More than one dip
+            return False
+
+        ans = 0
+        for k in get_div(n):
+            val = True
+            for i in range(0, n, k):
+                if not solve(nums[i : i + k], target[i : i + k]):
+                    val = False
+                    break
+            if val:
+                ans += k
+        return ans
