@@ -1,0 +1,57 @@
+from collections import deque
+from typing import Tuple
+
+class Solution:
+    def snakesAndLadders(self, board: list[list[int]]) -> int:
+
+        n = len(board)
+        queue = deque([1])
+        moves = 0
+
+        visited = [[False] * n for i in range(n)]
+        visited[n-1][0] = True
+
+        while queue:
+
+            length = len(queue)
+
+            for i in range(length):
+
+                boardVal = queue.popleft()
+
+                if boardVal == n*n:
+                    return moves
+
+                for diceVal in range(1, 7):
+
+                    if boardVal + diceVal > n*n:
+                        break
+
+                    nextVal = boardVal + diceVal
+
+                    row, col = self.findCoordinates(nextVal, n)
+
+                    if board[row][col] != -1:
+                        nextVal = board[row][col]
+
+                    finalRow, finalCol = self.findCoordinates(nextVal, n)
+
+                    if not visited[finalRow][finalCol]:
+
+                        visited[finalRow][finalCol] = True
+                        queue.append(nextVal)
+
+            moves += 1
+
+        return -1
+
+    def findCoordinates(self, curr: int, n: int) -> Tuple[int, int]:
+
+        row = n - (curr-1)//n - 1
+        col = (curr-1)%n
+
+        if row%2 == n%2:
+            return row, n-1-col
+
+        else:
+            return row, col
